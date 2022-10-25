@@ -1,0 +1,252 @@
+﻿AppType=JavaFX
+Build1=Default,b4j.example
+File1=Main.bjl
+FileGroup1=Default Group
+Group=Default Group
+Library1=jcore
+Library2=jfx
+NumberOfFiles=1
+NumberOfLibraries=2
+NumberOfModules=0
+Version=7.31
+@EndOfDesignText@
+#Region Project Attributes 
+	#MainFormWidth: 320
+	#MainFormHeight: 480
+#End Region
+
+Sub Process_Globals
+	Private fx As JFX
+	Private MainForm As Form
+	Private Button1 As Button
+		Public strHafizayiSil As String="Hafızayı silmek için 2 defa basın: "
+	Public strHafizadanAlinan As String="Hafızadan alınan :"
+	Public strHafizayaAlinan As String="Hafızaya alınan: "
+	Public strHafizaSilindi As String="Hafıza Silindi"
+	Public CONST STAGE1 As Int= 10 ' İlk sayı girişi
+	Public CONST STAGE2 As Int =20 ' Operator girişi
+	Public CONST STAGE3 As Int =30 ' 2. sayı girişi
+	Public CONST STAGE_RESULT As Int=100
+	Public CONST ISLEM_TOPLAMA As Int= 40
+	Public CONST ISLEM_CIKARMA As Int=50
+	Public CONST ISLEM_CARPMA As Int =60
+	Public CONST ISLEM_BOLME As Int=70
+	Public CONST ISLEM_KAREKOK As Int=80
+	Public CONST ISLEM_TANIMSIZ As Int=0
+	Public lang As String="";
+	Dim num1,num2,numResult,mem As Double ' Sayılar
+	' 1:Num1  2:Num2  3:Result
+	Dim STAGE As Int = 10
+	Dim ISLEM As Int= ISLEM_TANIMSIZ
+	Dim First As Boolean=True ' ilk çalışmada true
+	Dim OX As Int= 0
+	Dim OY As Int = 0' Orjinal tasarım
+	Private Button0 As Button
+	Private Button1 As Button
+	Private Button2 As Button
+	Private Button3 As Button
+	Private Button4 As Button
+	Private Button5 As Button
+	Private Button6 As Button
+	Private Button7 As Button
+	Private Button8 As Button
+	Private Button9 As Button
+	Private ButtonAdd As Button
+	Private ButtonBack As Button
+	Private ButtonCE As Button
+	Private ButtonDiv As Button
+	Private ButtonEqual As Button
+	Private ButtonMemCall As Button
+	Private ButtonMemPlus As Button
+	Private ButtonMemRst As Button
+	Private ButtonMul As Button
+	Private ButtonPeriod As Button
+	Private ButtonSqrt As Button
+	Private ButtonSub As Button
+	Public memrstStage As Int=0
+	Private Label1 As Label
+	Private LabelNums As Label
+	Private LabelMem As Label
+	Private ButtonPlusMinus As Button
+	Private EditText1 As TextArea
+	Private Panel1 As Pane
+End Sub
+
+Sub AppStart (Form1 As Form, Args() As String)
+	MainForm = Form1
+	MainForm.RootPane.LoadLayout("Main") 'Load the layout file.
+MainForm.Show
+End Sub
+
+'Return true to allow the default exceptions handler to handle the uncaught exception.
+Sub Application_Error (Error As Exception, StackTrace As String) As Boolean
+	Return True
+End Sub
+Sub ButtonDigit_Click
+Dim btn As Button = Sender
+	'work with btn.Text
+	If STAGE=STAGE_RESULT Then
+		STAGE=STAGE1
+		EditText1.Text="0"
+		num1=0
+		num2=0
+		numResult=0
+		
+	End If
+	If EditText1.Text="0" Then EditText1.Text =""
+	EditText1.Text=EditText1.Text & btn.Text
+	If STAGE=STAGE1 Then
+		num1= EditText1.Text
+	Else If STAGE=STAGE2 Then
+		num2= btn.Text
+		EditText1.Text=btn.Text
+		STAGE=STAGE3
+	else if STAGE=STAGE3 Then
+		num2= EditText1.Text
+	
+	End If
+	
+	
+	Try
+		
+	Catch
+		Log(LastException)
+	End Try
+End Sub
+
+Sub ButtonEqual_Click
+	If STAGE=STAGE3 Then
+		Select Case ISLEM
+			Case ISLEM_TOPLAMA
+				numResult=num1+num2
+				
+			Case ISLEM_CIKARMA
+				numResult=num1-num2
+				
+			Case ISLEM_CARPMA
+				numResult=num1*num2
+			
+			Case ISLEM_BOLME
+				numResult=num1/num2
+			
+		End Select
+		Dim intResult As Int= Round(numResult)
+		If intResult = numResult Then ' Tam sayı olma kontrolü
+			EditText1.Text=intResult
+		Else
+			EditText1.Text=numResult
+		End If
+		Log("num1: " & num1 &" Num2: " &num2 &" Result: " & numResult & "IntResult: " & intResult)
+		'tarihsel satır
+		LabelNums.Text =num1 & " "  _
+		& Label1.Text & " " _
+		& num2 & " = " _
+		& EditText1.Text 
+		
+		Label1.Text=""
+		STAGE=STAGE_RESULT
+	End If
+
+End Sub
+Sub IntorFloat(floatNum  As String) As String
+	Dim intResult As Int= Round(floatNum)
+	If intResult = numResult Then ' Tam sayı olma kontrolü
+		Return intResult
+	Else
+		Return floatNum
+	End If
+	 
+End Sub
+
+Sub ToastMessageShow(Message As String,Duration As Boolean)
+	
+End Sub
+
+Sub ButtonAdd_Click
+	ISLEM=ISLEM_TOPLAMA
+	STAGE=STAGE2
+	Label1.Text="+"
+	ToastMessageShow("+",False)
+End Sub
+Sub ButtonSub_Click
+	ISLEM=ISLEM_CIKARMA
+	STAGE=STAGE2
+	Label1.Text="-"
+	ToastMessageShow("-",False)
+End Sub
+Sub ButtonMul_Click
+	ISLEM=ISLEM_CARPMA
+	STAGE=STAGE2
+	Label1.Text="x"
+	ToastMessageShow("*",False)
+End Sub
+Sub ButtonDiv_Click
+	ISLEM=ISLEM_BOLME
+	STAGE=STAGE2
+	Label1.Text="/"
+	ToastMessageShow("/",False)
+End Sub
+
+Sub ButtonMemPlus_Click
+	mem=EditText1.Text
+	ToastMessageShow(strHafizayaAlinan & mem,False)
+	LabelMem.Text=mem
+End Sub
+Sub ButtonMemCall_Click
+	Dim memResult As String= IntorFloat(mem)
+	EditText1.Text= IntorFloat(memResult)
+	ToastMessageShow(strHafizadanAlinan & memResult,False)
+End Sub
+Sub ButtonMemRst_Click
+	Dim memResult As String= IntorFloat(mem)
+	If memrstStage=0 Then
+		memrstStage=1
+		ToastMessageShow(strHafizayiSil & memResult,False)
+		Return
+	Else If memrstStage=1 Then
+		mem=0
+		memrstStage=0
+		LabelMem.Text=""
+		ToastMessageShow(strHafizaSilindi,False)
+	End If
+End Sub
+
+
+Sub ButtonSqrt_Click
+	numResult= Sqrt(num1)
+	EditText1.Text=numResult
+	STAGE=STAGE_RESULT
+End Sub
+Sub ButtonCE_Click
+	EditText1.Text=0
+End Sub
+
+Sub ButtonBack_Click
+	Try
+	
+		If EditText1.Text.Length=1 Then
+			EditText1.Text="0"
+			Log("0")
+		Else
+			EditText1.Text = EditText1.Text.Substring2(0,EditText1.Text.Length - 1)
+		End If
+	Catch
+		EditText1.Text="0"
+		Log("Catch")
+	End Try
+
+
+End Sub
+
+
+
+
+Sub LabelMem_Click
+	
+End Sub
+
+Sub ButtonPlusMinus_Click
+	Dim f As Double= EditText1.Text
+	f=f*-1
+	EditText1.Text=IntorFloat(f)
+End Sub

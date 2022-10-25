@@ -1,0 +1,596 @@
+﻿Build1=Default,com.halitcan.calc,Calculator
+File1=icon.png
+File2=icon256.png
+File3=icon512.png
+File4=open.bal
+File5=strings.xml
+FileGroup1=Default Group
+FileGroup2=Default Group
+FileGroup3=Default Group
+FileGroup4=Default Group
+FileGroup5=Default Group
+Group=Default Group
+Library1=core
+Library2=reflection
+Library3=xui
+Library4=xui views
+Library5=resourcehelper
+ManifestCode='This code will be applied to the manifest file during compilation.~\n~'You do not need to modify it in most cases.~\n~'See this link for for more information: https://www.b4x.com/forum/showthread.php?p=78136~\n~AddManifestText(~\n~<uses-sdk android:minSdkVersion="5" android:targetSdkVersion="26"/>~\n~<supports-screens android:largeScreens="true" ~\n~    android:normalScreens="true" ~\n~    android:smallScreens="true" ~\n~    android:anyDensity="true"/>)~\n~SetApplicationAttribute(android:icon, "@drawable/icon")~\n~SetApplicationAttribute(android:label, "@string/app_name")~\n~SetActivityAttribute("main", android:label, "@string/app_name")~\n~SetActivityAttribute("main", android:configChanges, "locale")~\n~CreateResourceFromFile(Macro, Themes.DarkTheme)~\n~'End of default text.~\n~
+Module1=Starter
+NumberOfFiles=5
+NumberOfLibraries=5
+NumberOfModules=1
+Version=11.8
+@EndOfDesignText@
+#Region  Project Attributes 
+	#ApplicationLabel: Simple Calculator
+	#VersionCode:6 
+	#VersionName: 1.0.6
+	'SupportedOrientations possible values: unspecified, landscape or portrait.
+	#SupportedOrientations: portrait
+	#CanInstallToExternalStorage: False
+	#AdditionalRes: ..\res
+#End Region
+
+#Region  Activity Attributes 
+	#FullScreen: True
+	#IncludeTitle: False
+#End Region
+
+Sub Process_Globals
+	'These global variables will be declared once when the application starts.
+	'These variables can be accessed from all modules.
+	
+	Type TypeState (Name As String, state2(2) As Int,state1 As Int)
+
+	
+	
+End Sub
+
+
+Sub Globals
+	Dim res As ResourceHelper
+	'Copy ResourceHelper.jar & .xml files to Addditional Libraries folder		
+	'Set at Menu/Tools/Configure Paths
+	'https://www.b4x.com/android/forum/threads/strings-xml.67290/#post-426102
+	'These global variables will be redeclared each time the activity is created.
+	'These variables can only be accessed from this module.
+	Public strClearMemory As String="Hafızayı silmek için 2 defa basın: "
+	Public strCallMemory As String="Hafızadan alınan :"
+	Public strSavedToMem As String="Hafızaya alınan: "
+	Public strMemClerared As String="Hafıza Silindi"
+	Public CONST STAGE1 As Int= 10 ' İlk sayı girişi
+	Public CONST STAGE2 As Int =20 ' Operator girişi
+	Public CONST STAGE3 As Int =30 ' 2. sayı girişi
+	Public CONST STAGE_RESULT As Int=100
+	Public CONST OPERATION_SUM As Int= 40
+	Public CONST OPERATION_SUBTRACT As Int=50
+	Public CONST OPERATION_MULTIPLY As Int =60
+	Public CONST OPERATION_DIVISION As Int=70
+	Public CONST OPERATION_KAREKOK As Int=80
+	Public CONST OPERATION_UNDEFINED As Int=0
+	Public lang As String=""
+	Dim skin As Int=0
+	Dim num1,num2,numResult,mem As Double ' Sayılar
+	' 1:Num1  2:Num2  3:Result
+	Dim STAGE As Int = 10
+	Dim OPERATION As Int= OPERATION_UNDEFINED
+	Dim First As Boolean=True ' ilk çalışmada true
+	Dim OX As Int= 0
+	Dim OY As Int = 0' Orjinal tasarım
+	Private Button0 As Button
+	Private Button1 As Button
+	Private Button2 As Button
+	Private Button3 As Button
+	Private Button4 As Button
+	Private Button5 As Button
+	Private Button6 As Button
+	Private Button7 As Button
+	Private Button8 As Button
+	Private Button9 As Button
+	Private ButtonAdd As Button
+	Private ButtonBack As Button
+	Private ButtonCE As Button
+	Private ButtonDiv As Button
+	Private ButtonEqual As Button
+	Private ButtonMemCall As Button
+	Private ButtonMemPlus As Button
+	Private ButtonMemRst As Button
+	Private ButtonMul As Button
+
+	Private ButtonSqrt As Button
+	Private ButtonSub As Button
+	Private EditText1 As EditText
+	Private Panel1 As Panel
+	Public memrstStage As Int=0
+	Private Label1 As Label
+	Private LabelNums As Label
+	Private LabelMem As Label
+	Private ButtonPlusMinus As Button
+	Private ButtonPeriod As Button
+	Dim GradientGreen As GradientDrawable
+	Dim GradientPinky As GradientDrawable
+	Dim GradientYellow As GradientDrawable
+	Dim GradientRed As GradientDrawable
+	Dim GradientWhite As GradientDrawable
+	Dim GradientPurple As GradientDrawable
+	Dim GradientLBlue As GradientDrawable
+
+Dim SolidWhite As ColorDrawable
+Dim SolidPink As ColorDrawable
+	
+	Private ButtonTheme As Button
+End Sub
+
+Sub SetLanguage
+	If lang="tr" Then
+		strClearMemory="Hafızayı silmek için 2 defa basın: "
+		strCallMemory="Hafızadan alınan :"
+		strSavedToMem="Hafızaya alınan: "
+		strMemClerared="Hafıza Silindi"
+				
+	Else ' English 
+		strClearMemory="Press again to clear memory: "
+		strCallMemory="Called from memory :"
+		strSavedToMem="Saved to memory: "
+		strMemClerared="Memory cleared"
+	End If
+End Sub
+Sub Activity_Create(FirstTime As Boolean)
+
+	'Do not forget to load the layout file created with the visual designer. For example:
+	'Activity.LoadLayout("Layout1")
+	Activity.LoadLayout("Open")
+	lang=CheckLanguage
+	res.Initialize
+	Activity.Title =  res.getString("app_name")
+	
+	'Msgbox("Welcome to B4A!", "")
+	If FirstTime=True Then
+		EditText1.Text=0
+		LabelNums.Text=""
+		Label1.Text=""
+	End If
+	Resize
+	
+	MakeGradient
+
+	
+	
+	End Sub
+	
+Sub MakeGradient
+	Dim v As View
+	Dim CR As Int=10dip ' CornerRadius
+	'Gradients	
+	'GREEN
+	Dim ClrsGRreen(2) As Int
+	ClrsGRreen(0) =Colors.ARGB(255,146,219,105)
+	ClrsGRreen(1) = Colors.ARGB(255,55,110,52)
+	GradientGreen.Initialize("TOP_BOTTOM",ClrsGRreen )
+	GradientGreen.CornerRadius=CR
+	'PINKY
+	Dim ClrsPink(2) As Int
+	ClrsPink(0) =Colors.ARGB(255,255,169,169)
+	ClrsPink(1) = Colors.ARGB(255,175,68,68)
+	GradientPinky.Initialize("TOP_BOTTOM",ClrsPink )
+	GradientPinky.CornerRadius=CR
+		
+	'YELLOW
+	Dim ClrsYellow(2) As Int
+	ClrsYellow(0) =Colors.ARGB(255,255,255,112)
+	ClrsYellow(1) = Colors.ARGB(255,129,129,51)
+	GradientYellow.Initialize("TOP_BOTTOM", ClrsYellow)
+	GradientYellow.CornerRadius=CR
+		
+	'RED
+	Dim ClrsRed(2) As Int
+	ClrsRed(0) =Colors.ARGB(255,255,180,180)
+	ClrsRed(1) = Colors.ARGB(255,255,107,107)
+	GradientRed.Initialize("TOP_BOTTOM", ClrsRed)
+	GradientRed.CornerRadius=CR
+	
+	'WHITE
+	Dim ClrsWhite(2) As Int
+	ClrsWhite(0) =Colors.White
+	ClrsWhite(1) = Colors.ARGB(255,200,200,200)
+	GradientWhite.Initialize("TOP_BOTTOM", ClrsWhite)
+	GradientWhite.CornerRadius=CR
+	
+	'PURPLE
+	Dim ClrsPurple(2) As Int
+	ClrsPurple(0) =Colors.ARGB(255,255,0,255)
+	ClrsPurple(1) = Colors.ARGB(255,180,0,180)
+	GradientPurple.Initialize("TOP_BOTTOM", ClrsPurple)
+	GradientPurple.CornerRadius=CR
+	
+	'LIGHT BLUE
+	Dim ClrsLBlue(2) As Int
+	ClrsLBlue(0) =Colors.ARGB(255,243,255,255)
+	ClrsLBlue(1) = Colors.ARGB(255,165,215,231)
+	GradientLBlue.Initialize("TOP_BOTTOM", ClrsLBlue)
+	GradientLBlue.CornerRadius=CR
+	
+
+	Dim stdDraw(Activity.NumberOfViews) As StateListDrawable
+	Dim states((Activity.NumberOfViews)) As TypeState
+	
+	For i =0 To Activity.NumberOfViews-1
+		v= Activity.GetView(i)
+			states(i).Initialize
+		stdDraw(i).Initialize
+		
+		If v Is Button Then
+			Dim b As Button = v
+			Select v.Tag	'View tags used for styles
+				Case "digit" ' Number Buttons
+					
+					states(i).state2(0)=stdDraw(i).State_Enabled
+					states(i).state2(1)= -stdDraw(i).State_Pressed
+					stdDraw(i).AddState2(states(i).state2,GradientWhite)
+					states(i).state1=stdDraw(i).State_Pressed
+					stdDraw(i).AddState(states(i).state1,GradientRed)
+								
+					b.Background=stdDraw(i)
+				Case "equal"
+					states(i).state2(0)=stdDraw(i).State_Enabled
+					states(i).state2(1)= -stdDraw(i).State_Pressed
+					stdDraw(i).AddState2(states(i).state2,GradientLBlue)
+					states(i).state1=stdDraw(i).State_Pressed
+					stdDraw(i).AddState(states(i).state1,GradientRed)
+								
+					b.Background=stdDraw(i)
+				Case "math"
+					b.Background=GradientPurple
+					'b.TextColor=Colors.White
+				Case "red"						'Red anywhere
+					b.Background=GradientRed
+				'	b.TextColor=Colors.White
+				Case "yellow"					'Yellow anywhere
+					b.Background=GradientYellow
+				'	b.TextColor=Colors.White
+					
+			End Select
+			
+			b.Invalidate
+			End If
+	Next
+End Sub
+
+Sub MakeFlat
+	Dim v As View
+	Dim CR As Int=10dip ' CornerRadius
+	
+	SolidWhite.Initialize2(Colors.White,CR,1,1)
+	SolidPink.Initialize2(Colors.ARGB(0,255,0,255),CR,1,1)
+	
+	Dim stdDraw(Activity.NumberOfViews) As StateListDrawable
+	Dim states((Activity.NumberOfViews)) As TypeState
+	
+	
+	For i =0 To Activity.NumberOfViews-1
+		v= Activity.GetView(i)
+		
+		states(i).Initialize
+		stdDraw(i).Initialize
+		If v Is Button Then
+			Dim b As Button = v
+			Select v.Tag	'View tags used for styles
+				Case "digit" ' Number Buttons
+					
+					states(i).state2(0)=stdDraw(i).State_Enabled
+					states(i).state2(1)= -stdDraw(i).State_Pressed
+					stdDraw(i).AddState2(states(i).state2,SolidWhite)
+					
+					states(i).state1=stdDraw(i).State_Pressed
+					stdDraw(i).AddState(states(i).state1,SolidPink)
+					
+					b.Background=stdDraw(i)
+				Case "equal"
+					states(i).state2(0)=stdDraw(i).State_Enabled
+					states(i).state2(1)= -stdDraw(i).State_Pressed
+					stdDraw(i).AddState2(states(i).state2,GradientLBlue)
+					states(i).state1=stdDraw(i).State_Pressed
+					stdDraw(i).AddState(states(i).state1,GradientRed)
+								
+					b.Background=stdDraw(i)
+				Case "math"
+					b.Background=GradientPurple
+					'b.TextColor=Colors.White
+				Case "red"						'Red anywhere
+					b.Background=GradientRed
+					'	b.TextColor=Colors.White
+				Case "yellow"					'Yellow anywhere
+					b.Background=GradientYellow
+					'	b.TextColor=Colors.White
+					
+			End Select
+			
+			b.Invalidate
+		End If
+	
+	
+	Next
+End Sub
+
+Sub Activity_Resume
+	Resize
+	lang=CheckLanguage
+	Log(lang)
+	SetLanguage
+	MakeGradient
+End Sub
+
+Sub Activity_Pause (UserClosed As Boolean)
+
+End Sub
+
+Sub CheckLanguage As String
+	Dim language As String
+	Dim r As Reflector
+
+	Try
+		r.Target = r.RunStaticMethod("java.util.Locale", "getDefault", Null, Null)
+		language = r.RunMethod("getLanguage")
+	Catch
+		Log(LastException)
+	End Try
+
+	Return language.ToLowerCase
+End Sub
+
+
+
+Sub ButtonPeriod_Click
+	'nokta ekleme
+	Dim btn As Button = Sender
+	If STAGE=STAGE2 And EditText1.Text<>"0" Then
+		EditText1.Text="0."
+		STAGE=STAGE3
+	else If EditText1.Text.IndexOf(".")==-1 Then
+		EditText1.Text=EditText1.Text & btn.Text
+	End If
+	
+
+
+End Sub
+Sub ButtonDigit_Click
+	Dim btn As Button = Sender
+	'work with btn.Text
+	If STAGE=STAGE_RESULT Then
+		STAGE=STAGE1
+		EditText1.Text="0"
+		num1=0
+		num2=0
+		numResult=0
+		
+	End If
+
+	If EditText1.Text="0" Then EditText1.Text =""
+	
+	EditText1.Text=EditText1.Text & btn.Text
+	
+	If STAGE=STAGE1 Then
+		num1= EditText1.Text
+	Else If STAGE=STAGE2 Then
+		num2= btn.Text
+		EditText1.Text=btn.Text
+		STAGE=STAGE3
+	else if STAGE=STAGE3 Then
+		num2= EditText1.Text
+	
+	End If
+
+	
+End Sub
+Sub ButtonEqual_Click
+If STAGE=STAGE3 Then
+	Select Case OPERATION
+			Case OPERATION_SUM
+				numResult=num1+num2
+				
+			Case OPERATION_SUBTRACT
+				numResult=num1-num2
+				
+			Case OPERATION_MULTIPLY
+				numResult=num1*num2
+			
+			Case OPERATION_DIVISION
+				numResult=num1/num2
+			
+		End Select
+		Dim intResult As Int= Round(numResult)
+		If intResult = numResult Then ' Tam sayı olma kontrolü
+			EditText1.Text=intResult
+			Else
+			EditText1.Text=numResult	
+		End If
+	Log("num1: " & num1 &" Num2: " &num2 &" Result: " & numResult & "IntResult: " & intResult) 
+	'tarihsel satır
+		LabelNums.Text =num1 & " "  _
+		& Label1.Text & " " _
+		& num2 & " = " _
+		& EditText1.Text 
+		
+		Label1.Text=""
+	STAGE=STAGE_RESULT
+End If
+
+End Sub
+Sub IntorFloat(floatNum  As String) As String
+	Dim intResult As Int= Round(floatNum)
+	If intResult = numResult Then ' Tam sayı olma kontrolü
+		Return intResult
+	Else
+		Return floatNum
+	End If
+	 
+End Sub
+
+Sub ButtonAdd_Click
+	OPERATION=OPERATION_SUM
+	STAGE=STAGE2
+	Label1.Text="+"
+	ToastMessageShow("+",False)
+End Sub
+Sub ButtonSub_Click
+	OPERATION=OPERATION_SUBTRACT
+	STAGE=STAGE2
+	Label1.Text="-"
+	ToastMessageShow("-",False)
+End Sub
+Sub ButtonMul_Click
+	OPERATION=OPERATION_MULTIPLY
+	STAGE=STAGE2
+	Label1.Text="x"
+	ToastMessageShow("*",False)
+End Sub
+Sub ButtonDiv_Click
+	OPERATION=OPERATION_DIVISION
+	STAGE=STAGE2
+	Label1.Text="/"
+	ToastMessageShow("/",False)
+End Sub
+
+Sub ButtonMemPlus_Click
+	mem=EditText1.Text
+	ToastMessageShow(strSavedToMem & mem,False)
+	LabelMem.Text=mem
+End Sub
+Sub ButtonMemCall_Click
+	Dim memResult As String= IntorFloat(mem)
+	EditText1.Text= IntorFloat(memResult)
+	ToastMessageShow(strCallMemory & memResult,False)
+End Sub
+Sub ButtonMemRst_Click
+	Dim memResult As String= IntorFloat(mem)
+	If memrstStage=0 Then
+		memrstStage=1
+		ToastMessageShow(strClearMemory & memResult,False)
+		Return
+	Else If memrstStage=1 Then
+		mem=0
+		memrstStage=0
+		LabelMem.Text=""
+		ToastMessageShow(strMemClerared,False)
+	End If
+End Sub
+
+
+Sub ButtonSqrt_Click
+	numResult= Sqrt(num1)
+	EditText1.Text=IntorFloat( numResult)
+	LabelNums.Text="√" & num1 & "=" & IntorFloat(numResult)
+	Select STAGE
+		Case STAGE1
+			num1=numResult
+			
+		Case STAGE3
+			num2=numResult
+	End Select
+End Sub
+Sub ButtonCE_Click
+	EditText1.Text=0
+	Label1.Text=""
+	num1=0
+	num2=0
+	numResult=0
+	STAGE=STAGE1
+End Sub
+
+Sub ButtonBack_Click
+	Try
+	
+		If EditText1.Text.Length=1 Then
+			EditText1.Text="0"
+			Log("0")
+		Else
+		EditText1.Text = EditText1.Text.Substring2(0,EditText1.Text.Length - 1)
+		End If
+	Catch
+		EditText1.Text="0"
+	Log("Catch")
+	End Try
+
+
+End Sub
+'''Bütün kontrolleri boyutlandırır
+'All views resize
+Sub Resize
+	Dim PX As Double=1
+	Dim PY As Double=1
+	Dim W As Int= Activity.Width
+	Dim H As Int=Activity.Height
+	If First =True Then
+		First=False
+		OX = 320' Original Design Size
+		OY = 480
+		PX = W / (OX*Density) ' Change proportions
+		PY = H / (OY*Density)
+	End If
+		
+	Dim v As View
+	Panel1.Visible=False
+	For i =0 To Activity.NumberOfViews-1
+		v= Activity.GetView(i)
+			
+		v.Left=v.Left * PX
+		v.Top=v.Top*PY
+		v.Width=v.Width*PX
+		v.Height=v.Height*PY
+		
+		If v Is Button Then
+		
+		End If
+	Next
+	'İkinci çalışmada büyüklüğün artık yeni değere göre hesaplanması için
+	' Recalculate size every time
+	OX=Activity.Width
+	OY=Activity.Height
+	Panel1.Visible=True
+	
+End Sub
+
+
+Sub GetOrientation As Int
+	Dim r As Reflector
+	r.Target = r.GetContext
+	r.Target = r.RunMethod("getResources")
+	r.Target = r.RunMethod("getConfiguration")
+ 	Dim Result As Int = r.GetField("orientation")
+	Return Result
+  
+End Sub
+
+
+
+Sub LabelMem_Click
+	
+End Sub
+
+Sub ButtonPlusMinus_Click
+	Dim f As Double= EditText1.Text
+	f=f*-1
+	EditText1.Text=IntorFloat(f)
+	Select STAGE
+		Case STAGE1 ' First Number entered
+			num1=f
+		Case STAGE3 ' Second Number entered
+			num2=f
+	End Select
+End Sub
+
+Sub ButtonTheme_Click
+If skin=0 Then
+	skin=1
+	else if skin=1 Then
+	skin=0
+End If
+	Select skin
+		Case 0 'Flat
+			MakeFlat
+		Case 1 'Gradient
+			MakeGradient
+				
+	End Select
+End Sub
